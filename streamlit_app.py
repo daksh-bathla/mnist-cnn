@@ -11,7 +11,11 @@ from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
-from torchvision import datasets, transforms
+try:
+    from torchvision import datasets, transforms
+except ImportError:
+    datasets = None
+    transforms = None
 import json
 
 # Set page config
@@ -53,21 +57,17 @@ class SimpleCNN(nn.Module):
 @st.cache_resource
 def load_model():
     model = SimpleCNN()
+    # Load pre-trained weights
+    state_dict = torch.load('mnist_model.pth', map_location=torch.device('cpu'))
+    model.load_state_dict(state_dict)
     return model
 
-@st.cache_resource
-def load_test_data():
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
-    ])
-    test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
-    return test_dataset
-
-# Load model and data
+# Load model
 model = load_model()
 model.eval()
-test_dataset = load_test_data()
+
+# Demo MNIST samples (pre-loaded to avoid download)
+DEMO_SAMPLES = None  # Will be loaded on demand
 
 # ============================================================================
 # HELPER FUNCTIONS
@@ -326,32 +326,43 @@ elif page == "Interactive Prediction":
     st.subheader("🎲 Sample Predictions from Test Set")
 
     if st.button("Show Random Test Predictions"):
-        col1, col2, col3, col4, col5 = st.columns(5)
-        cols = [col1, col2, col3, col4, col5]
+        st.info("Loading MNIST test samples (first time only)...")
 
-        # Get 5 random test images
-        random_indices = np.random.choice(len(test_dataset), 5, replace=False)
+        try:
+            transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.1307,), (0.3081,))
+            ])
+            test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
 
-        for idx, col in enumerate(cols):
-            img, true_label = test_dataset[random_indices[idx]]
-            img_array = img.squeeze().numpy()
+            col1, col2, col3, col4, col5 = st.columns(5)
+            cols = [col1, col2, col3, col4, col5]
 
-            with col:
-                # Display image
-                st.image(img_array, width=100, use_container_width=True)
+            # Get 5 random test images
+            random_indices = np.random.choice(len(test_dataset), 5, replace=False)
 
-                # Make prediction
-                prob = predict_digit(img_array)
-                pred_label = np.argmax(prob)
-                confidence = prob[pred_label]
+            for idx, col in enumerate(cols):
+                img, true_label = test_dataset[random_indices[idx]]
+                img_array = img.squeeze().numpy()
 
-                # Color based on correctness
-                if pred_label == true_label:
-                    st.write(f"✅ **Pred:** {pred_label}")
-                else:
-                    st.write(f"❌ **Pred:** {pred_label}")
-                st.write(f"**True:** {true_label}")
-                st.write(f"**Conf:** {confidence:.1%}")
+                with col:
+                    # Display image
+                    st.image(img_array, width=100, use_container_width=True)
+
+                    # Make prediction
+                    prob = predict_digit(img_array)
+                    pred_label = np.argmax(prob)
+                    confidence = prob[pred_label]
+
+                    # Color based on correctness
+                    if pred_label == true_label:
+                        st.write(f"✅ **Pred:** {pred_label}")
+                    else:
+                        st.write(f"❌ **Pred:** {pred_label}")
+                    st.write(f"**True:** {true_label}")
+                    st.write(f"**Conf:** {confidence:.1%}")
+        except Exception as e:
+            st.error(f"Error loading test data: {e}")
 
 # ============================================================================
 # FOOTER
