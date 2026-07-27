@@ -181,7 +181,7 @@ if page == "Overview":
         st.subheader("📈 Training Progress")
         try:
             img = Image.open('model_accuracy_loss.png')
-            st.image(img, use_column_width=True)
+            st.image(img, use_container_width=True)
         except:
             st.warning("Accuracy/Loss plot not found. Run mnist_cnn.py first.")
 
@@ -189,7 +189,7 @@ if page == "Overview":
         st.subheader("🎯 Predictions on Random Test Images")
         try:
             img = Image.open('predictions.png')
-            st.image(img, use_column_width=True)
+            st.image(img, use_container_width=True)
         except:
             st.warning("Predictions plot not found. Run mnist_cnn.py first.")
 
@@ -215,7 +215,7 @@ elif page == "Model Metrics":
         st.subheader("Confusion Matrix")
         try:
             img = Image.open('confusion_matrix.png')
-            st.image(img, use_column_width=True)
+            st.image(img, use_container_width=True)
         except:
             st.warning("Confusion matrix not found. Run mnist_cnn.py first.")
 
@@ -223,7 +223,7 @@ elif page == "Model Metrics":
         st.subheader("Training Curves")
         try:
             img = Image.open('model_accuracy_loss.png')
-            st.image(img, use_column_width=True)
+            st.image(img, use_container_width=True)
         except:
             st.warning("Training curves not found. Run mnist_cnn.py first.")
 
@@ -338,7 +338,7 @@ elif page == "Interactive Prediction":
 
             with col:
                 # Display image
-                st.image(img_array, width=100, use_column_width=True)
+                st.image(img_array, width=100, use_container_width=True)
 
                 # Make prediction
                 prob = predict_digit(img_array)
