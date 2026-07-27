@@ -20,4 +20,4 @@ wheels/
 *.egg
 data/
 .DS_Store
-.streamlit/
+.streamlit/secrets.toml
